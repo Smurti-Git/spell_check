@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spell & Type — Mini Monkey</title>
+  <style>
+    :root {
+      --bg: #0f1220;
+      /* deep indigo */
+      --panel: #171a2b;
+      --muted: #8a90a6;
+      --text: #e8ecf3;
+      --accent: #7c5cff;
+      /* violet */
+      --good: #22c55e;
+      /* green */
+      --bad: #ef4444;
+      /* red */
+      --warn: #f59e0b;
+      /* amber */
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 80% -10%, #1e2140 0%, var(--bg) 60%);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px
+    }
+
+    .brand {
+      font-weight: 800;
+      letter-spacing: .4px;
+      font-size: 20px
+    }
+
+    .chip {
+      padding: 6px 10px;
+      border: 1px solid #2a2f4a;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    .grid {
+      /* display: grid; */
+      grid-template-columns: 360px 1fr;
+      gap: 16px
+    }
+
+    @media (max-width: 1000px) {
+      .grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), #13162a);
+      border: 1px solid #22274a;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .25)
+    }
+
+    .card .head {
+      padding: 16px 18px;
+      border-bottom: 1px solid #202444;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .card .head h3 {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: .3px;
+      color: #d5d9e6
+    }
+
+    .card .body {
+      padding: 16px 18px
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      background: #0e1121;
+      border: 1px solid #202545;
+      border-radius: 12px;
+      padding: 14px 12px;
+      color: var(--text);
+      resize: vertical;
+      font-size: 14px;
+      line-height: 1.5;
+      outline: none
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      cursor: pointer;
+      transition: transform .06s ease, filter .2s ease;
+    }
+
+    button:active {
+      transform: translateY(1px)
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white
+    }
+
+    .ghost {
+      background: #101328;
+      border: 1px solid #24294a;
+      color: #c9cfe0
+    }
+
+    .danger {
+      background: transparent;
+      border: 1px solid #3a2133;
+      color: #ff90a6
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    .pill {
+      background: #0f142b;
+      border: 1px solid #252c53;
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: #c8cde1;
+      font-size: 12px
+    }
+
+    .display {
+      min-height: 160px;
+      background: #0b0f1f;
+      border: 1px dashed #2a3058;
+      border-radius: 14px;
+      padding: 14px 12px;
+      font-size: 18px;
+      line-height: 1.8;
+      word-wrap: break-word
+    }
+
+    .display .word {
+      opacity: .88
+    }
+
+    .display .current {
+      border-bottom: 2px solid #4152ff
+    }
+
+    .char {
+      white-space: pre
+    }
+
+    .char.ok {
+      color: var(--good)
+    }
+
+    .char.miss {
+      color: var(--bad);
+      text-decoration: underline
+    }
+
+    .char.extra {
+      background: rgba(239, 68, 68, .18);
+      color: #ffd5d5;
+      border-radius: 4px
+    }
+
+    .word.done.ok {
+      background: rgba(34, 197, 94, .08);
+      border-radius: 6px;
+      padding: 2px 2px
+    }
+
+    .word.done.bad {
+      background: rgba(239, 68, 68, .08);
+      border-radius: 6px;
+      padding: 2px 2px
+    }
+
+    .typebox {
+      width: 100%;
+      background: #0e1121;
+      border: 1px solid #202545;
+      border-radius: 12px;
+      padding: 12px 12px;
+      color: var(--text);
+      outline: none;
+      font-size: 16px
+    }
+
+    .typebox::placeholder {
+      color: #56608a
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    .stats {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap
+    }
+
+    .stat {
+      background: #0e1328;
+      border: 1px solid #1f2446;
+      border-radius: 12px;
+      padding: 10px 12px;
+      min-width: 120px
+    }
+
+    .stat .label {
+      font-size: 12px;
+      color: #97a0be
+    }
+
+    .stat .val {
+      font-size: 22px;
+      font-weight: 800
+    }
+
+    .report {
+      margin-top: 10px
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #212650;
+      padding: 10px 8px;
+      text-align: left
+    }
+
+    th {
+      color: #a8b0cf;
+      font-weight: 600;
+      font-size: 13px
+    }
+
+    td {
+      color: #d7def7;
+      font-size: 13px
+    }
+
+    .empty {
+      opacity: .7
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">Spell & Type <span class="chip">Monkeytype‑style</span></div>
+      <div class="row">
+        <div class="pill" id="modePill">Mode: Exact Retype</div>
+        <div class="pill">v1.0</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Left: Setup -->
+      <section class="card">
+        <div class="head">
+          <h3>Paste Your Paragraph</h3>
+        </div>
+        <div class="body">
+          <textarea id="source" placeholder="Paste any paragraph here..."></textarea>
+          <div class="controls">
+            <button class="primary" id="startBtn">Start Test</button>
+            <button class="ghost" id="sampleBtn">Load Sample</button>
+            <button class="danger" id="resetBtn">Reset</button>
+          </div>
+          <div class="controls">
+            <button class="ghost" id="toggleMode">Switch to Free Rewrite</button>
+            <span class="muted">Exact Retype compares character‑by‑character to the original. Free Rewrite checks
+              spelling only.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Typing Area -->
+      <section class="card">
+        <div class="head">
+          <h3>Typing Area</h3>
+        </div>
+        <div class="body">
+          <div id="display" class="display empty">Paste text at left and press <b>Start Test</b>.</div>
+          <input id="typebox" class="typebox" type="text" placeholder="Start typing here…" disabled />
+
+          <div class="stats" style="margin-top:12px">
+            <div class="stat">
+              <div class="label">WPM</div>
+              <div class="val" id="wpm">0</div>
+            </div>
+            <div class="stat">
+              <div class="label">Accuracy</div>
+              <div class="val" id="accuracy">0%</div>
+            </div>
+            <div class="stat">
+              <div class="label">Errors</div>
+              <div class="val" id="errors">0</div>
+            </div>
+            <div class="stat">
+              <div class="label">Time</div>
+              <div class="val" id="time">0s</div>
+            </div>
+          </div>
+
+          <div class="report" id="report"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // --- Utilities ---
+    const byId = id => document.getElementById(id);
+    const sourceEl = byId('source');
+    const startBtn = byId('startBtn');
+    const sampleBtn = byId('sampleBtn');
+    const resetBtn = byId('resetBtn');
+    const toggleModeBtn = byId('toggleMode');
+    const modePill = byId('modePill');
+
+    const display = byId('display');
+    const typebox = byId('typebox');
+
+    const wpmEl = byId('wpm');
+    const accEl = byId('accuracy');
+    const errEl = byId('errors');
+    const timeEl = byId('time');
+    const reportEl = byId('report');
+
+    let words = [];
+    let wordIndex = 0;
+    let startedAt = null;
+    let timerId = null;
+    let totalTyped = 0; // characters
+    let totalCorrect = 0; // characters
+    let totalErrors = 0; // characters
+    let mode = 'exact'; // 'exact' | 'rewrite'
+
+    function splitWords(text) {
+      // Keep punctuation attached but treat as part of word
+      return text.trim().replace(/\s+/g, ' ').split(' ');
+    }
+
+    function renderDisplay() {
+      display.classList.remove('empty');
+      display.innerHTML = '';
+      words.forEach((w, i) => {
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.setAttribute('data-word', w);
+        span.style.marginRight = '8px';
+        if (i === wordIndex) span.classList.add('current');
+        span.textContent = w;
+        display.appendChild(span);
+      });
+    }
+
+    function startTimer() {
+      startedAt = Date.now();
+      timerId = setInterval(() => {
+        const secs = Math.floor((Date.now() - startedAt) / 1000);
+        timeEl.textContent = secs + 's';
+        const minutes = (Date.now() - startedAt) / 60000;
+        const wpm = minutes > 0 ? Math.round((totalCorrect / 5) / minutes) : 0;
+        wpmEl.textContent = isFinite(wpm) ? wpm : 0;
+        const acc = totalTyped > 0 ? Math.max(0, Math.min(100, Math.round((totalCorrect / Math.max(1, totalTyped)) * 100))) : 0;
+        accEl.textContent = acc + '%';
+        errEl.textContent = totalErrors;
+      }, 200);
+    }
+
+    function stopTimer() {
+      if (timerId) clearInterval(timerId);
+      timerId = null;
+    }
+
+    function softResetStats() {
+      totalTyped = 0; totalCorrect = 0; totalErrors = 0;
+      wpmEl.textContent = '0';
+      accEl.textContent = '0%';
+      errEl.textContent = '0';
+      timeEl.textContent = '0s';
+      reportEl.innerHTML = '';
+    }
+
+    function hardReset() {
+      stopTimer();
+      words = []; wordIndex = 0; startedAt = null; softResetStats();
+      display.classList.add('empty');
+      display.innerHTML = 'Paste text at left and press <b>Start Test</b>.';
+      typebox.value = '';
+      typebox.disabled = true;
+    }
+
+    // Compare a typed word to the target and return DOM fragment for highlighting
+    function highlightWord(target, typed) {
+      const frag = document.createDocumentFragment();
+      const maxLen = Math.max(target.length, typed.length);
+      let correctInThisWord = 0, errorsInThisWord = 0;
+      for (let i = 0; i < maxLen; i++) {
+        const ch = typed[i];
+        const goal = target[i];
+        const span = document.createElement('span');
+        span.className = 'char';
+        span.textContent = ch ?? '';
+        if (ch == null) {
+          // missing characters (not typed yet) – don't count until user types
+        } else if (goal == null) {
+          span.classList.add('extra');
+          errorsInThisWord++; totalErrors++; totalTyped++;
+        } else if (ch === goal) {
+          span.classList.add('ok');
+          correctInThisWord++; totalCorrect++; totalTyped++;
+        } else {
+          span.classList.add('miss');
+          errorsInThisWord++; totalErrors++; totalTyped++;
+        }
+        frag.appendChild(span);
+      }
+      return { frag, correctInThisWord, errorsInThisWord };
+    }
+
+    function finishTest() {
+      stopTimer();
+      typebox.disabled = true;
+      // Build a simple report for word mismatches
+      const wrongs = [];
+      const wordEls = [...display.querySelectorAll('.word')];
+      wordEls.forEach((el) => {
+        if (el.classList.contains('done')) {
+          if (el.classList.contains('bad')) {
+            wrongs.push({ target: el.getAttribute('data-word'), typed: el.getAttribute('data-typed') || '' });
+          }
+        }
+      });
+      if (mode === 'rewrite') {
+        // In rewrite mode, we only run the browser's spellcheck result snapshot
+        reportEl.innerHTML = '<div class="muted">Free Rewrite finished. Review the underlines in your input for spelling hints (browser spellcheck). You can also copy your text for external tools.</div>';
+        return;
+      }
+      if (wrongs.length === 0) {
+        reportEl.innerHTML = '<div class="muted">Great job! No word-level mismatches detected.</div>';
+        return;
+      }
+      let html = '<table><thead><tr><th>#</th><th>Expected</th><th>Your Input</th></tr></thead><tbody>';
+      wrongs.forEach((w, i) => {
+        html += `<tr><td>${i + 1}</td><td>${escapeHtml(w.target)}</td><td>${escapeHtml(w.typed)}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      reportEl.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[s]));
+    }
+
+    // --- Event wiring ---
+    startBtn.addEventListener('click', () => {
+      const text = sourceEl.value.trim();
+      if (!text) {
+        alert('Paste a paragraph first.');
+        return;
+      }
+      words = splitWords(text);
+      wordIndex = 0;
+      renderDisplay();
+      typebox.value = '';
+      typebox.disabled = false;
+      typebox.focus();
+      softResetStats();
+      stopTimer(); startedAt = null; startTimer();
+    });
+
+    sampleBtn.addEventListener('click', () => {
+      sourceEl.value = `Good writing is clear thinking made visible. Paste your own paragraph here and press Start Test. Type exactly what you see to train accuracy, or switch to Free Rewrite to practice spelling in your own words.`;
+    });
+
+    resetBtn.addEventListener('click', hardReset);
+
+    // Mode toggle: exact retype vs free rewrite (spellcheck only)
+    toggleModeBtn.addEventListener('click', () => {
+      if (mode === 'exact') {
+        mode = 'rewrite';
+        toggleModeBtn.textContent = 'Switch to Exact Retype';
+        modePill.textContent = 'Mode: Free Rewrite';
+        typebox.setAttribute('spellcheck', 'true');
+      } else {
+        mode = 'exact';
+        toggleModeBtn.textContent = 'Switch to Free Rewrite';
+        modePill.textContent = 'Mode: Exact Retype';
+        typebox.setAttribute('spellcheck', 'false');
+      }
+      hardReset();
+    });
+
+    typebox.addEventListener('input', (e) => {
+      if (mode === 'rewrite') {
+        // Only update stats roughly using characters typed.
+        if (!startedAt) { startTimer(); }
+        totalTyped++;
+        // Browser spellcheck UI will show underlines; we still provide basic WPM.
+        return;
+      }
+
+      if (words.length === 0) return;
+      const currentWord = words[wordIndex] || '';
+      const typed = typebox.value;
+
+      // If user hit space or finished exact length -> submit the word
+      if (/\s$/.test(typed)) {
+        const cleaned = typed.trim();
+        commitWord(cleaned, currentWord);
+        typebox.value = '';
+        // Finish if last word committed
+        if (wordIndex >= words.length) {
+          finishTest();
+        }
+        return;
+      }
+
+      // live highlight current word
+      const wordEls = display.querySelectorAll('.word');
+      wordEls.forEach((el, i) => {
+        if (i === wordIndex) {
+          el.innerHTML = '';
+          const { frag } = highlightWord(currentWord, typed);
+          el.appendChild(frag);
+          el.classList.add('current');
+        } else {
+          // keep others as text (already rendered)
+          if (!el.classList.contains('done')) {
+            el.textContent = el.getAttribute('data-word');
+          }
+          el.classList.toggle('current', i === wordIndex);
+        }
+      });
+    });
+
+    function commitWord(typed, target) {
+      const el = display.querySelectorAll('.word')[wordIndex];
+      el.classList.remove('current');
+      el.setAttribute('data-typed', typed);
+      el.classList.add('done');
+
+      // Evaluate
+      if (typed === target) {
+        el.classList.add('ok'); el.classList.add('done', 'ok');
+      } else {
+        el.classList.add('bad');
+        // count per-character diff as errors if not already counted live
+        const { frag } = highlightWord(target, typed);
+        el.innerHTML = ''; el.appendChild(frag);
+      }
+
+      // Move cursor to next word
+      wordIndex++;
+      const next = display.querySelectorAll('.word')[wordIndex];
+      if (next) { next.classList.add('current'); }
+    }
+
+    // Quality of life: backspace to previous word if input is empty
+    typebox.addEventListener('keydown', (e) => {
+      if (mode === 'exact' && e.key === 'Backspace' && typebox.value === '') {
+        if (wordIndex > 0) {
+          e.preventDefault();
+          wordIndex--;
+          const el = display.querySelectorAll('.word')[wordIndex];
+          typebox.value = (el.getAttribute('data-typed') || '');
+          el.classList.remove('done', 'ok', 'bad');
+          el.textContent = el.getAttribute('data-word');
+          el.classList.add('current');
+        }
+      }
+      if (!startedAt) { startTimer(); }
+    });
+
+    // Initialize
+    hardReset();
+  </script>
+</body>
+
+</html>
